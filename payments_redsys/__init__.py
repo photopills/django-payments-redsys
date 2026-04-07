@@ -79,6 +79,7 @@ class RedsysProvider(BasicProvider):
         self.shared_secret = kwargs.pop('shared_secret')
         self.currency = kwargs.pop('currency', '978')
         self.direct_payment = str(kwargs.pop('direct_payment', False)).upper()
+        self.payload = kwargs.pop('payload', {})
 
         # Get provided endpoint base domain or REDSYS.pruebas env
         self.endpoint = urljoin(
@@ -125,7 +126,9 @@ class RedsysProvider(BasicProvider):
             "DS_MERCHANT_URLOK": urljoin(get_base_url(), payment.get_success_url()),
             "DS_MERCHANT_URLKO": urljoin(get_base_url(), payment.get_failure_url()),
             "Ds_Merchant_ConsumerLanguage": '002',
+            **payment.payload,
         }
+
         json_data = json.dumps(merchant_data)
         b64_params = base64.b64encode(json_data.encode())
         signature = compute_signature(str(order_number), b64_params, self.shared_secret)
@@ -257,3 +260,5 @@ class RedsysProvider(BasicProvider):
                 logger.debug('rejected: %s' % binary_merchant_parameters.decode())
 
         return HttpResponse()
+
+
